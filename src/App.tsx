@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
+// import reactLogo from './assets/react.svg';
+// import viteLogo from '/vite.svg';
 import bishopImg from './chussy/pieces/bishop.png';
 import pawnImg from './chussy/pieces/pawn.png';
 import rookImg from './chussy/pieces/rook.png';
@@ -9,7 +9,7 @@ import queenImg from './chussy/pieces/queen.png';
 import kingImg from './chussy/pieces/king.png';
 import './App.css';
 import {
-  getChussBoard,
+  // getChussBoard,
   newBoard,
   ChussPieceSide,
   ChussPieceType,
@@ -70,7 +70,7 @@ function Square(props: {
 //{row.map((piece) => <Square/>)}
 
 function App() {
-  const [board, setBoard] = useState(() => newBoard());
+  const [board] = useState(() => newBoard());
   return (
     <div>
       {board.map((row, y) => (
