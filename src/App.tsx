@@ -1,6 +1,4 @@
 import { useState } from 'react';
-// import reactLogo from './assets/react.svg';
-// import viteLogo from '/vite.svg';
 import bishopImg from './chussy/pieces/bishop.png';
 import pawnImg from './chussy/pieces/pawn.png';
 import rookImg from './chussy/pieces/rook.png';
@@ -13,6 +11,8 @@ import {
   newBoard,
   ChussPieceSide,
   ChussPieceType,
+  possibleMoves,
+  makeMove,
 } from './chussy/chuss';
 
 const squareSize = 75;
@@ -70,19 +70,61 @@ function Square(props: {
 //{row.map((piece) => <Square/>)}
 
 function App() {
-  const [board] = useState(() => newBoard());
+  const [gameState, setGameState] = useState(() => ({
+    board: newBoard(),
+    turn: 0,
+  }));
+  const [selectedPosition, setSelectedPosition] = useState<
+    [number, number] | null
+  >(null);
+  const legalMoves = selectedPosition
+    ? possibleMoves(gameState.board, selectedPosition)
+    : null;
+  console.log(legalMoves);
   return (
     <div>
-      {board.map((row, y) => (
+      {gameState.board.map((row, y) => (
         <div style={{ height: squareSize }}>
-          {row.map((piece, x) => (
-            <Square
-              y={y}
-              x={x}
-              side={piece?.pieceSide}
-              type={piece?.pieceType}
-            />
-          ))}
+          {row.map((piece, x) => {
+            const isLegalMove =
+              selectedPosition &&
+              legalMoves?.some((move) => move[0] === y && move[1] === x);
+            const isSelectablePiece =
+              piece &&
+              ((piece.pieceSide === 'White' && gameState.turn % 2 == 0) ||
+                (piece.pieceSide === 'Black' && gameState.turn % 2 == 1));
+            return (
+              <button
+                style={{
+                  padding: 0,
+                  margin: 0,
+                  filter: isLegalMove ? 'invert(1)' : undefined,
+                }}
+                disabled={!isLegalMove && !isSelectablePiece}
+                onClick={() => {
+                  if (isLegalMove) {
+                    setSelectedPosition(null);
+                    setGameState({
+                      board: makeMove(gameState.board, selectedPosition, [
+                        y,
+                        x,
+                      ]),
+                      turn: gameState.turn + 1,
+                    });
+                  } else {
+                    setSelectedPosition([y, x]);
+                  }
+                }}
+              >
+                <Square
+                  y={y}
+                  x={x}
+                  side={piece?.pieceSide}
+                  type={piece?.pieceType}
+                />
+              </button>
+            );
+          })}
         </div>
       ))}
     </div>

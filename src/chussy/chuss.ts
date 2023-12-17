@@ -107,10 +107,11 @@ export function possibleMoves(
         if (
           currentCol < 0 ||
           currentRow < 0 ||
-          currentCol > boardsize ||
-          currentRow > boardsize
+          currentCol >= boardsize ||
+          currentRow >= boardsize
         ) {
           sentinel = false;
+          break;
         }
 
         const thingAtPos = board[currentRow][currentCol];
@@ -120,8 +121,10 @@ export function possibleMoves(
         } else if (thingAtPos.pieceSide != piece.pieceSide) {
           moveArray.push([currentRow, currentCol]);
           sentinel = false;
+          break;
         } else {
           sentinel = false;
+          break;
         }
 
         if (singleStep) {
@@ -205,4 +208,18 @@ export function possibleMoves(
     }
   }
   return moveArray;
+}
+
+export function makeMove(
+  board: ChussBoard,
+  [oriRow, oriCol]: readonly [number, number],
+  [destiRow, destiCol]: readonly [number, number]
+): ChussBoard {
+  const piece = board[oriRow][oriCol];
+  board[oriRow][oriCol] = null;
+  board[destiRow][destiCol] = piece;
+  if (piece) {
+    piece.pieceMoved = true;
+  }
+  return board;
 }
