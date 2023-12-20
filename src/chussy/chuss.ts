@@ -212,7 +212,7 @@ export function possibleMoves(
     return moveArray;
   }
   return moveArray.filter((move) => {
-    const testBoard = makeMove(board, [row, col], move);
+    const testBoard = testMove(board, [row, col], move);
     return !isInCheck(testBoard, piece.pieceSide);
   });
 }
@@ -250,7 +250,7 @@ export function isInCheck(board: ChussBoard, side: ChussPieceSide) {
   return false;
 }
 
-export function makeMove(
+function testMove(
   board: ChussBoard,
   [oriRow, oriCol]: readonly [number, number],
   [destiRow, destiCol]: readonly [number, number]
@@ -261,8 +261,21 @@ export function makeMove(
   const piece = board[oriRow][oriCol];
   board[oriRow][oriCol] = null;
   board[destiRow][destiCol] = piece;
-  if (piece) {
-    piece.pieceMoved = true;
-  }
+  //   if (piece) {
+  //     piece.pieceMoved = true;
+  //   }
   return board;
+}
+
+export function makeMove(
+  board: ChussBoard,
+  [oriRow, oriCol]: readonly [number, number],
+  [destiRow, destiCol]: readonly [number, number]
+) {
+  const piece = board[oriRow][oriCol];
+  if (!piece) {
+    throw new Error("There's no piece there bucko!");
+  }
+  piece.pieceMoved = true;
+  return testMove(board, [oriRow, oriCol], [destiRow, destiCol]);
 }
