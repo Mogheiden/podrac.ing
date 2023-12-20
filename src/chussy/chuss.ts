@@ -204,7 +204,7 @@ export function possibleMoves(
             piece.pieceSide
           )
         ) {
-          moveArray.push([row, col + 2]);
+          moveArray.push([row, col - 2]);
         }
       }
     }
@@ -303,6 +303,18 @@ function testMove(
       pieceMoved: true,
       pieceSide: piece!.pieceSide,
     };
+    return board;
+  }
+  if (piece!.pieceType == 'King' && destiCol - oriCol === -2) {
+    board[oriRow][oriCol] = null;
+    board[destiRow][destiCol] = piece;
+    board[oriRow][oriCol - 4] = null;
+    board[destiRow][destiCol + 1] = {
+      pieceType: 'Rook',
+      pieceMoved: true,
+      pieceSide: piece!.pieceSide,
+    };
+    return board;
   }
   board[oriRow][oriCol] = null;
   board[destiRow][destiCol] = piece;
