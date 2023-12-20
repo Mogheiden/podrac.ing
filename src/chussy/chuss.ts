@@ -173,6 +173,41 @@ export function possibleMoves(
       ],
       true
     );
+    if (!piece.pieceMoved) {
+      if (
+        !board[row][col + 1] &&
+        !board[row][col + 2] &&
+        board[row][col + 3] &&
+        !board[row][col + 3]!.pieceMoved &&
+        !isInCheck(board, piece.pieceSide)
+      ) {
+        if (
+          !isInCheck(
+            testMove(board, [row, col], [row, col + 1]),
+            piece.pieceSide
+          )
+        ) {
+          moveArray.push([row, col + 2]);
+        }
+      }
+      if (
+        !board[row][col - 1] &&
+        !board[row][col - 2] &&
+        !board[row][col - 3] &&
+        board[row][col - 4] &&
+        !board[row][col - 4]!.pieceMoved &&
+        !isInCheck(board, piece.pieceSide)
+      ) {
+        if (
+          !isInCheck(
+            testMove(board, [row, col], [row, col - 1]),
+            piece.pieceSide
+          )
+        ) {
+          moveArray.push([row, col + 2]);
+        }
+      }
+    }
   } else if (piece.pieceType === 'Knight') {
     allowMovementInDirections(
       [
@@ -259,8 +294,19 @@ function testMove(
     return arr.slice();
   });
   const piece = board[oriRow][oriCol];
+  if (piece!.pieceType == 'King' && destiCol - oriCol === 2) {
+    board[oriRow][oriCol] = null;
+    board[destiRow][destiCol] = piece;
+    board[oriRow][oriCol + 3] = null;
+    board[destiRow][destiCol - 1] = {
+      pieceType: 'Rook',
+      pieceMoved: true,
+      pieceSide: piece!.pieceSide,
+    };
+  }
   board[oriRow][oriCol] = null;
   board[destiRow][destiCol] = piece;
+
   //   if (piece) {
   //     piece.pieceMoved = true;
   //   }
