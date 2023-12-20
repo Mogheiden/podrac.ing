@@ -30,7 +30,7 @@ function uPiece(
 }
 
 export function newBoard(): ChussBoard {
-  let board = [
+  const board = [
     [
       uPiece('Rook', 'Black'),
       uPiece('Knight', 'Black'),
@@ -82,7 +82,8 @@ export function newBoard(): ChussBoard {
 
 export function possibleMoves(
   board: ChussBoard,
-  [row, col]: [row: number, column: number]
+  [row, col]: [row: number, column: number],
+  checkChecks: boolean = true
 ): [row: number, column: number][] {
   const moveArray: [number, number][] = [];
   const piece = board[row][col];
@@ -207,11 +208,46 @@ export function possibleMoves(
       moveArray.push([row + 1 * direction, col - 1]);
     }
   }
+  if (!checkChecks) {
+    return moveArray;
+  }
   return moveArray.filter((move) => {
     const testBoard = makeMove(board, [row, col], move);
-
-    /* findKing */
+    return !isInCheck(testBoard, piece.pieceSide);
   });
+}
+
+export function isInCheck(board: ChussBoard, side: ChussPieceSide) {
+  const kingPos = (() => {
+    for (let y = 0; y < boardsize; y++) {
+      for (let x = 0; x < boardsize; x++) {
+        if (
+          board[y][x] &&
+          board[y][x]?.pieceType === 'King' &&
+          board[y][x]?.pieceSide === side
+        ) {
+          return [y, x] as const;
+        }
+      }
+    }
+    throw new Error("There's no king on this board bucko!");
+  })();
+
+  for (let y = 0; y < boardsize; y++) {
+    for (let x = 0; x < boardsize; x++) {
+      if (board[y][x] && board[y][x]?.pieceSide !== side) {
+        const array = possibleMoves(board, [y, x], false);
+        if (
+          array.some(
+            (tuple) => tuple[0] === kingPos[0] && tuple[1] === kingPos[1]
+          )
+        ) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
 export function makeMove(

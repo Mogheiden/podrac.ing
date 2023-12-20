@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import bishopImg from './chussy/pieces/bishop.png';
 import pawnImg from './chussy/pieces/pawn.png';
 import rookImg from './chussy/pieces/rook.png';
@@ -13,6 +13,7 @@ import {
   ChussPieceType,
   possibleMoves,
   makeMove,
+  isInCheck,
 } from './chussy/chuss';
 
 const squareSize = 75;
@@ -75,7 +76,14 @@ function App() {
   const legalMoves = selectedPosition
     ? possibleMoves(gameState.board, selectedPosition)
     : null;
-  console.log(legalMoves);
+  // console.log(legalMoves);
+  const turnSide = gameState.turn % 2 === 0 ? 'White' : 'Black';
+  const inCheck = isInCheck(gameState.board, turnSide);
+  useEffect(() => {
+    if (inCheck) {
+      alert('Check!');
+    }
+  }, [inCheck]);
   return (
     <div>
       {gameState.board.map((row, y) => (
@@ -84,10 +92,7 @@ function App() {
             const isLegalMove =
               selectedPosition &&
               legalMoves?.some((move) => move[0] === y && move[1] === x);
-            const isSelectablePiece =
-              piece &&
-              ((piece.pieceSide === 'White' && gameState.turn % 2 == 0) ||
-                (piece.pieceSide === 'Black' && gameState.turn % 2 == 1));
+            const isSelectablePiece = piece && piece.pieceSide === turnSide;
             let backgroundColor = 'green';
             if ((y % 2 && x % 2) || (y % 2 == 0 && x % 2 == 0)) {
               backgroundColor = 'white';
