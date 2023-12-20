@@ -40,14 +40,9 @@ function Square(props: {
   side?: ChussPieceSide;
   type?: ChussPieceType;
 }) {
-  let backgroundColor = 'brown';
-  if ((props.y % 2 && props.x % 2) || (props.y % 2 == 0 && props.x % 2 == 0)) {
-    backgroundColor = 'white';
-  }
   return (
     <div
       style={{
-        backgroundColor,
         height: squareSize,
         width: squareSize,
         display: 'inline-block',
@@ -93,12 +88,20 @@ function App() {
               piece &&
               ((piece.pieceSide === 'White' && gameState.turn % 2 == 0) ||
                 (piece.pieceSide === 'Black' && gameState.turn % 2 == 1));
+            let backgroundColor = 'green';
+            if ((y % 2 && x % 2) || (y % 2 == 0 && x % 2 == 0)) {
+              backgroundColor = 'white';
+            }
             return (
               <button
                 style={{
                   padding: 0,
                   margin: 0,
-                  filter: isLegalMove ? 'invert(1)' : undefined,
+                  boxShadow: isLegalMove
+                    ? 'inset 0px -2px 0px 5px red'
+                    : undefined,
+                  backgroundColor,
+                  borderRadius: 0,
                 }}
                 disabled={!isLegalMove && !isSelectablePiece}
                 onClick={() => {

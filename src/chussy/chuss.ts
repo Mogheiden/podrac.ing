@@ -207,7 +207,11 @@ export function possibleMoves(
       moveArray.push([row + 1 * direction, col - 1]);
     }
   }
-  return moveArray;
+  return moveArray.filter((move) => {
+    const testBoard = makeMove(board, [row, col], move);
+
+    /* findKing */
+  });
 }
 
 export function makeMove(
@@ -215,6 +219,9 @@ export function makeMove(
   [oriRow, oriCol]: readonly [number, number],
   [destiRow, destiCol]: readonly [number, number]
 ): ChussBoard {
+  board = board.map(function (arr) {
+    return arr.slice();
+  });
   const piece = board[oriRow][oriCol];
   board[oriRow][oriCol] = null;
   board[destiRow][destiCol] = piece;
