@@ -14,6 +14,7 @@ import {
   possibleMoves,
   makeMove,
   isInCheck,
+  hasLegalMoves,
 } from './chussy/chuss';
 
 const squareSize = 75;
@@ -74,16 +75,29 @@ function App() {
     [number, number] | null
   >(null);
   const legalMoves = selectedPosition
-    ? possibleMoves(gameState.board, selectedPosition)
+    ? possibleMoves(gameState.board, gameState.turn, selectedPosition)
     : null;
   // console.log(legalMoves);
   const turnSide = gameState.turn % 2 === 0 ? 'White' : 'Black';
-  const inCheck = isInCheck(gameState.board, turnSide);
+  const inCheck = isInCheck(gameState.board, gameState.turn, turnSide);
+  const hasAnyLegalMoves = hasLegalMoves(
+    gameState.board,
+    gameState.turn,
+    turnSide
+  );
+  console.log(hasAnyLegalMoves);
   useEffect(() => {
-    if (inCheck) {
-      alert('Check!');
-    }
-  }, [inCheck]);
+    setTimeout(() => {
+      if (inCheck) {
+        if (!hasAnyLegalMoves) {
+          alert(`${turnSide} has been checkmated.`);
+          setGameState({ board: newBoard(), turn: 0 });
+        } else {
+          alert('Check!');
+        }
+      }
+    }, 1);
+  }, [hasAnyLegalMoves, inCheck, turnSide]);
   return (
     <div>
       {gameState.board.map((row, y) => (
@@ -113,10 +127,12 @@ function App() {
                   if (isLegalMove) {
                     setSelectedPosition(null);
                     setGameState({
-                      board: makeMove(gameState.board, selectedPosition, [
-                        y,
-                        x,
-                      ]),
+                      board: makeMove(
+                        gameState.board,
+                        gameState.turn,
+                        selectedPosition,
+                        [y, x]
+                      ),
                       turn: gameState.turn + 1,
                     });
                   } else {

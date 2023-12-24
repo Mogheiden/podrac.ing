@@ -20,6 +20,7 @@ interface ChussPiece {
   pieceType: ChussPieceType;
   pieceSide: ChussPieceSide;
   pieceMoved: boolean;
+  turnPawnMovedTwoSpaces?: number;
 }
 
 function uPiece(
@@ -82,6 +83,7 @@ export function newBoard(): ChussBoard {
 
 export function possibleMoves(
   board: ChussBoard,
+  turnNumber: number,
   [row, col]: [row: number, column: number],
   checkChecks: boolean = true
 ): [row: number, column: number][] {
@@ -179,11 +181,12 @@ export function possibleMoves(
         !board[row][col + 2] &&
         board[row][col + 3] &&
         !board[row][col + 3]!.pieceMoved &&
-        !isInCheck(board, piece.pieceSide)
+        !isInCheck(board, turnNumber, piece.pieceSide)
       ) {
         if (
           !isInCheck(
             testMove(board, [row, col], [row, col + 1]),
+            turnNumber,
             piece.pieceSide
           )
         ) {
@@ -196,11 +199,12 @@ export function possibleMoves(
         !board[row][col - 3] &&
         board[row][col - 4] &&
         !board[row][col - 4]!.pieceMoved &&
-        !isInCheck(board, piece.pieceSide)
+        !isInCheck(board, turnNumber, piece.pieceSide)
       ) {
         if (
           !isInCheck(
             testMove(board, [row, col], [row, col - 1]),
+            turnNumber,
             piece.pieceSide
           )
         ) {
@@ -242,17 +246,35 @@ export function possibleMoves(
     ) {
       moveArray.push([row + 1 * direction, col - 1]);
     }
+    [
+      [row, col - 1],
+      [row, col + 1],
+    ].forEach((square) => {
+      const enemypiece = board[square[0]][square[1]];
+      if (
+        enemypiece &&
+        enemypiece.pieceSide !== piece.pieceSide &&
+        enemypiece.pieceType === 'Pawn' &&
+        enemypiece.turnPawnMovedTwoSpaces === turnNumber - 1
+      ) {
+        moveArray.push([square[0] + direction, square[1]]);
+      }
+    });
   }
   if (!checkChecks) {
     return moveArray;
   }
   return moveArray.filter((move) => {
     const testBoard = testMove(board, [row, col], move);
-    return !isInCheck(testBoard, piece.pieceSide);
+    return !isInCheck(testBoard, turnNumber, piece.pieceSide);
   });
 }
 
-export function isInCheck(board: ChussBoard, side: ChussPieceSide) {
+export function isInCheck(
+  board: ChussBoard,
+  turn: number,
+  side: ChussPieceSide
+) {
   const kingPos = (() => {
     for (let y = 0; y < boardsize; y++) {
       for (let x = 0; x < boardsize; x++) {
@@ -271,7 +293,7 @@ export function isInCheck(board: ChussBoard, side: ChussPieceSide) {
   for (let y = 0; y < boardsize; y++) {
     for (let x = 0; x < boardsize; x++) {
       if (board[y][x] && board[y][x]?.pieceSide !== side) {
-        const array = possibleMoves(board, [y, x], false);
+        const array = possibleMoves(board, turn, [y, x], false);
         if (
           array.some(
             (tuple) => tuple[0] === kingPos[0] && tuple[1] === kingPos[1]
@@ -316,17 +338,22 @@ function testMove(
     };
     return board;
   }
+  if (
+    piece!.pieceType === 'Pawn' &&
+    Math.abs(destiCol - oriCol) === 1 &&
+    !board[destiRow][destiCol]
+  ) {
+    board[oriRow][destiCol] = null;
+  }
   board[oriRow][oriCol] = null;
   board[destiRow][destiCol] = piece;
 
-  //   if (piece) {
-  //     piece.pieceMoved = true;
-  //   }
   return board;
 }
 
 export function makeMove(
   board: ChussBoard,
+  turn: number,
   [oriRow, oriCol]: readonly [number, number],
   [destiRow, destiCol]: readonly [number, number]
 ) {
@@ -335,5 +362,26 @@ export function makeMove(
     throw new Error("There's no piece there bucko!");
   }
   piece.pieceMoved = true;
+  if (piece.pieceType === 'Pawn' && Math.abs(oriRow - destiRow) === 2) {
+    piece.turnPawnMovedTwoSpaces = turn;
+  }
   return testMove(board, [oriRow, oriCol], [destiRow, destiCol]);
+}
+
+export function hasLegalMoves(
+  board: ChussBoard,
+  turnNumber: number,
+  side: ChussPieceSide
+) {
+  for (let y = 0; y < boardsize; y++) {
+    for (let x = 0; x < boardsize; x++) {
+      if (board[y][x] && board[y][x]?.pieceSide === side) {
+        const array = possibleMoves(board, turnNumber, [y, x]);
+        if (array.length !== 0) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 }
