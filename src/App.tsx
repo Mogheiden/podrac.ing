@@ -151,6 +151,10 @@ function App() {
           })}
         </div>
       ))}
+      <br />
+      <button onClick={() => setGameState({ board: newBoard(), turn: 0 })}>
+        reset
+      </button>
     </div>
   );
 }
