@@ -85,8 +85,10 @@ function App() {
     turn: 0,
   }));
   const [gameHistory, setGameHistory] = useState(() => ({
-    undoStack: [] as { board: ChussBoard; turn: number }[],
+    undoStack: [] as Readonly<{ board: ChussBoard; turn: number }[]>,
+    redoStack: [] as Readonly<{ board: ChussBoard; turn: number }[]>,
   }));
+
   const [selectedPiecePos, setSelectedPiecePos] = useState<
     [number, number] | null
   >(null);
@@ -108,6 +110,7 @@ function App() {
     gameState.turn,
     turnSide
   );
+  console.log('render', gameHistory);
   useEffect(() => {
     if (inCheck) {
       if (!hasAnyLegalMoves) {
@@ -145,7 +148,7 @@ function App() {
             <button
               onClick={() => {
                 setGameState({ board: newBoard(), turn: 0 });
-                setGameHistory({ undoStack: [] });
+                setGameHistory({ undoStack: [], redoStack: [] });
                 setModal(null);
               }}
             >
@@ -161,7 +164,7 @@ function App() {
             <button
               onClick={() => {
                 setGameState({ board: newBoard(), turn: 0 });
-                setGameHistory({ undoStack: [] });
+                setGameHistory({ undoStack: [], redoStack: [] });
                 setModal(null);
               }}
             >
@@ -179,7 +182,7 @@ function App() {
             <button
               onClick={() => {
                 setGameState({ board: newBoard(), turn: 0 });
-                setGameHistory({ undoStack: [] });
+                setGameHistory({ undoStack: [], redoStack: [] });
                 setModal(null);
               }}
             >
@@ -199,39 +202,41 @@ function App() {
               Choose promotion type:
             </div>
             <br />
-            {(['Queen', 'Rook', 'Knight', 'Bishop'] as const).map((piece) => (
-              <button
-                onClick={() => {
-                  setGameHistory({
-                    undoStack: gameHistory.undoStack.concat(
-                      structuredClone(gameState)
-                    ),
-                  });
-                  setGameState({
-                    board: promoteAndMakeMove(
-                      gameState.board,
-                      gameState.turn,
-                      selectedPiecePos,
-                      pawnPromotionDest,
-                      piece
-                    ),
-                    turn: gameState.turn + 1,
-                  });
-                  setSelectedPiecePos(null);
-                  setPawnPromotionDest(null);
-                  setModal(null);
-                }}
-              >
-                <img
-                  src={getChussPieceImage(piece)}
-                  style={{
-                    width: '5%',
-                    height: '5%',
-                    filter: turnSide === 'Black' ? 'invert(1)' : undefined,
+            <div style={{ display: 'flex', gap: 4 }}>
+              {(['Queen', 'Rook', 'Knight', 'Bishop'] as const).map((piece) => (
+                <button
+                  onClick={() => {
+                    setGameHistory({
+                      undoStack: gameHistory.undoStack.concat(
+                        structuredClone(gameState)
+                      ),
+                      redoStack: [],
+                    });
+                    setGameState({
+                      board: promoteAndMakeMove(
+                        gameState.board,
+                        gameState.turn,
+                        selectedPiecePos,
+                        pawnPromotionDest,
+                        piece
+                      ),
+                      turn: gameState.turn + 1,
+                    });
+                    setSelectedPiecePos(null);
+                    setPawnPromotionDest(null);
+                    setModal(null);
                   }}
-                />
-              </button>
-            ))}
+                >
+                  <img
+                    src={getChussPieceImage(piece)}
+                    style={{
+                      width: '100px',
+                      filter: turnSide === 'Black' ? 'invert(1)' : undefined,
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
           </>
         );
     }
@@ -241,7 +246,7 @@ function App() {
   return (
     <div>
       {gameState.board.map((row, y) => (
-        <div style={{ height: squareSize }}>
+        <div style={{ height: squareSize, width: 800 }}>
           {row.map((piece, x) => {
             const isLegalMove =
               selectedPiecePos &&
@@ -275,6 +280,7 @@ function App() {
                         undoStack: gameHistory.undoStack.concat(
                           structuredClone(gameState)
                         ),
+                        redoStack: [],
                       });
                       setGameState({
                         board: makeMove(
@@ -303,7 +309,12 @@ function App() {
         </div>
       ))}
       <br />
-      <button onClick={() => setGameState({ board: newBoard(), turn: 0 })}>
+      <button
+        onClick={() => {
+          setGameState({ board: newBoard(), turn: 0 });
+          setGameHistory({ undoStack: [], redoStack: [] });
+        }}
+      >
         reset
       </button>
       <button
@@ -314,12 +325,34 @@ function App() {
             return;
           } else {
             setGameState(state);
-            setGameHistory({ undoStack: gameHistory.undoStack.slice(0, -1) });
+            setGameHistory({
+              undoStack: gameHistory.undoStack.slice(0, -1),
+              redoStack: gameHistory.redoStack.concat(gameState),
+            });
             setSelectedPiecePos(null);
           }
         }}
       >
         undo
+      </button>
+      <button
+        onClick={() => {
+          const state = gameHistory.redoStack.at(-1);
+          if (!state) {
+            alert(`Your last action wasn't an undo, bucko!`);
+            return;
+          } else {
+            console.log('Redoing', gameHistory, state);
+            setGameState(state);
+            setGameHistory({
+              redoStack: gameHistory.redoStack.slice(0, -1),
+              undoStack: gameHistory.undoStack.concat(gameState),
+            });
+            setSelectedPiecePos(null);
+          }
+        }}
+      >
+        redo
       </button>
       {modal ? (
         <div
