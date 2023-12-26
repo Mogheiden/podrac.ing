@@ -5,6 +5,7 @@ import rookImg from './chussy/pieces/rook.png';
 import knightImg from './chussy/pieces/knight.png';
 import queenImg from './chussy/pieces/queen.png';
 import kingImg from './chussy/pieces/king.png';
+import insufficientmaterials from './chussy/pieces/insufficientmaterials.jpeg';
 import './App.css';
 import {
   // getChussBoard,
@@ -15,6 +16,9 @@ import {
   makeMove,
   isInCheck,
   hasLegalMoves,
+  isDrawByMaterial,
+  promoteAndMakeMove,
+  isPawnPromotion,
 } from './chussy/chuss';
 
 const squareSize = 75;
@@ -64,6 +68,14 @@ function Square(props: {
   );
 }
 
+type ModalType =
+  | 'check'
+  | 'checkmate'
+  | 'promotion'
+  | 'stalemate'
+  | 'draw'
+  | 'promotion';
+
 //{row.map((piece) => <Square/>)}
 
 function App() {
@@ -71,40 +83,156 @@ function App() {
     board: newBoard(),
     turn: 0,
   }));
-  const [selectedPosition, setSelectedPosition] = useState<
+  const [selectedPiecePos, setSelectedPiecePos] = useState<
     [number, number] | null
   >(null);
-  const legalMoves = selectedPosition
-    ? possibleMoves(gameState.board, gameState.turn, selectedPosition)
+  const [pawnPromotionDest, setPawnPromotionDest] = useState<
+    [number, number] | null
+  >(null);
+  const [_modalState, setModal] = useState<ModalType | null>(null);
+  let modal = _modalState;
+  //const [isCheckmateModalOpen, setCheckmateModalOpen] = useState(false);
+  const legalMoves = selectedPiecePos
+    ? possibleMoves(gameState.board, gameState.turn, selectedPiecePos)
     : null;
   // console.log(legalMoves);
   const turnSide = gameState.turn % 2 === 0 ? 'White' : 'Black';
   const inCheck = isInCheck(gameState.board, gameState.turn, turnSide);
+  const drawByMaterial = isDrawByMaterial(gameState.board);
   const hasAnyLegalMoves = hasLegalMoves(
     gameState.board,
     gameState.turn,
     turnSide
   );
-  console.log(hasAnyLegalMoves);
   useEffect(() => {
-    setTimeout(() => {
-      if (inCheck) {
-        if (!hasAnyLegalMoves) {
-          alert(`${turnSide} has been checkmated.`);
-          setGameState({ board: newBoard(), turn: 0 });
-        } else {
-          alert('Check!');
-        }
+    if (inCheck) {
+      if (!hasAnyLegalMoves) {
+        setModal('checkmate');
+      } else {
+        setModal('check');
       }
-    }, 1);
-  }, [hasAnyLegalMoves, inCheck, turnSide]);
+    } else if (!hasAnyLegalMoves) {
+      setModal('stalemate');
+    } else if (drawByMaterial) {
+      setModal('draw');
+    }
+  }, [hasAnyLegalMoves, inCheck, turnSide, drawByMaterial]);
+  if (pawnPromotionDest) {
+    modal = 'promotion';
+  }
+
+  function renderModalContent(modal: ModalType) {
+    switch (modal) {
+      case 'check':
+        return (
+          <>
+            <div style={{ color: 'white', fontSize: '24px' }}>Check!</div>
+            <br />
+            <button onClick={() => setModal(null)}>okay!</button>
+          </>
+        );
+      case 'checkmate':
+        return (
+          <>
+            <div style={{ color: 'white', fontSize: '24px' }}>
+              {turnSide} has been checkmated.
+            </div>
+            <br />
+            <button
+              onClick={() => {
+                setGameState({ board: newBoard(), turn: 0 });
+                setModal(null);
+              }}
+            >
+              Rematch
+            </button>
+          </>
+        );
+      case 'stalemate':
+        return (
+          <>
+            <div style={{ color: 'white', fontSize: '24px' }}>Stalemate</div>
+            <br />
+            <button
+              onClick={() => {
+                setGameState({ board: newBoard(), turn: 0 });
+                setModal(null);
+              }}
+            >
+              Rematch
+            </button>
+          </>
+        );
+      case 'draw':
+        return (
+          <>
+            <div>
+              <img src={insufficientmaterials} />
+            </div>
+            <br />
+            <button
+              onClick={() => {
+                setGameState({ board: newBoard(), turn: 0 });
+                setModal(null);
+              }}
+            >
+              Rematch
+            </button>
+          </>
+        );
+      case 'promotion':
+        if (!pawnPromotionDest || !selectedPiecePos) {
+          throw new Error(
+            'Expected pawn promotion destination and origin BUCKO!'
+          );
+        }
+        return (
+          <>
+            <div style={{ color: 'white', fontSize: '24px' }}>
+              Choose promotion type:
+            </div>
+            <br />
+            {(['Queen', 'Rook', 'Knight', 'Bishop'] as const).map((piece) => (
+              <button
+                onClick={() => {
+                  setGameState({
+                    board: promoteAndMakeMove(
+                      gameState.board,
+                      gameState.turn,
+                      selectedPiecePos,
+                      pawnPromotionDest,
+                      piece
+                    ),
+                    turn: gameState.turn + 1,
+                  });
+                  setSelectedPiecePos(null);
+                  setPawnPromotionDest(null);
+                  setModal(null);
+                }}
+              >
+                <img
+                  src={getChussPieceImage(piece)}
+                  style={{
+                    width: '5%',
+                    height: '5%',
+                    filter: turnSide === 'Black' ? 'invert(1)' : undefined,
+                  }}
+                />
+              </button>
+            ))}
+          </>
+        );
+    }
+    throw new Error('Invalid modal state');
+  }
+
   return (
     <div>
       {gameState.board.map((row, y) => (
         <div style={{ height: squareSize }}>
           {row.map((piece, x) => {
             const isLegalMove =
-              selectedPosition &&
+              selectedPiecePos &&
               legalMoves?.some((move) => move[0] === y && move[1] === x);
             const isSelectablePiece = piece && piece.pieceSide === turnSide;
             let backgroundColor = 'green';
@@ -125,18 +253,24 @@ function App() {
                 disabled={!isLegalMove && !isSelectablePiece}
                 onClick={() => {
                   if (isLegalMove) {
-                    setSelectedPosition(null);
-                    setGameState({
-                      board: makeMove(
-                        gameState.board,
-                        gameState.turn,
-                        selectedPosition,
-                        [y, x]
-                      ),
-                      turn: gameState.turn + 1,
-                    });
+                    if (
+                      isPawnPromotion(gameState.board, selectedPiecePos, [y, x])
+                    ) {
+                      setPawnPromotionDest([y, x]);
+                    } else {
+                      setSelectedPiecePos(null);
+                      setGameState({
+                        board: makeMove(
+                          gameState.board,
+                          gameState.turn,
+                          selectedPiecePos,
+                          [y, x]
+                        ),
+                        turn: gameState.turn + 1,
+                      });
+                    }
                   } else {
-                    setSelectedPosition([y, x]);
+                    setSelectedPiecePos([y, x]);
                   }
                 }}
               >
@@ -155,6 +289,23 @@ function App() {
       <button onClick={() => setGameState({ board: newBoard(), turn: 0 })}>
         reset
       </button>
+      {modal ? (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: '#000000BB',
+          }}
+        >
+          <div>{renderModalContent(modal)}</div>
+        </div>
+      ) : undefined}
     </div>
   );
 }

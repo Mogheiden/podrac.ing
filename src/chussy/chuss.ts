@@ -228,20 +228,20 @@ export function possibleMoves(
     );
   } else if (piece.pieceType === 'Pawn') {
     const direction: number = piece.pieceSide == 'White' ? -1 : 1;
-    if (!board[row + 1 * direction][col]) {
+    if (!board[row + 1 * direction]?.[col]) {
       moveArray.push([row + 1 * direction, col]);
       if (!piece.pieceMoved && !board[row + 2 * direction][col]) {
         moveArray.push([row + 2 * direction, col]);
       }
     }
     if (
-      board[row + 1 * direction][col + 1] &&
+      board[row + 1 * direction]?.[col + 1] &&
       board[row + 1 * direction][col + 1]?.pieceSide !== piece.pieceSide
     ) {
       moveArray.push([row + 1 * direction, col + 1]);
     }
     if (
-      board[row + 1 * direction][col - 1] &&
+      board[row + 1 * direction]?.[col - 1] &&
       board[row + 1 * direction][col - 1]?.pieceSide !== piece.pieceSide
     ) {
       moveArray.push([row + 1 * direction, col - 1]);
@@ -368,6 +368,58 @@ export function makeMove(
   return testMove(board, [oriRow, oriCol], [destiRow, destiCol]);
 }
 
+export function isPawnPromotion(
+  board: ChussBoard,
+  [oriRow, oriCol]: readonly [number, number],
+  [destiRow]: readonly [number, number]
+) {
+  const piece = board[oriRow][oriCol];
+  if (piece?.pieceType !== 'Pawn') {
+    return false;
+  }
+  return destiRow === 0 || destiRow === boardsize - 1;
+}
+
+export function isDrawByMaterial(board: ChussBoard) {
+  let pieceCountsBlack = 0;
+  let pieceCountsWhite = 0;
+  for (let y = 0; y < boardsize; y++) {
+    for (let x = 0; x < boardsize; x++) {
+      const square = board[y][x];
+      if (
+        square &&
+        (square.pieceType === 'Pawn' ||
+          square.pieceType === 'Queen' ||
+          square.pieceType === 'Rook')
+      ) {
+        return false;
+      } else if (square) {
+        square.pieceSide === 'Black'
+          ? (pieceCountsBlack += 1)
+          : (pieceCountsWhite += 1);
+        if (pieceCountsBlack > 2 || pieceCountsWhite > 2) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+export function promoteAndMakeMove(
+  board: ChussBoard,
+  turn: number,
+  [oriRow, oriCol]: readonly [number, number],
+  [destiRow, destiCol]: readonly [number, number],
+  newpiece: ChussPieceType
+) {
+  const square = board[oriRow][oriCol];
+  if (!square) {
+    throw new Error('What in the goddamn?');
+  }
+  square.pieceType = newpiece;
+  return makeMove(board, turn, [oriRow, oriCol], [destiRow, destiCol]);
+}
 export function hasLegalMoves(
   board: ChussBoard,
   turnNumber: number,
