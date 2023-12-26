@@ -14,7 +14,7 @@ export type ChussPieceType =
 
 export type ChussPieceSide = 'Black' | 'White';
 
-type ChussBoard = (ChussPiece | null)[][];
+export type ChussBoard = (ChussPiece | null)[][];
 
 interface ChussPiece {
   pieceType: ChussPieceType;

@@ -19,6 +19,7 @@ import {
   isDrawByMaterial,
   promoteAndMakeMove,
   isPawnPromotion,
+  ChussBoard,
 } from './chussy/chuss';
 
 const squareSize = 75;
@@ -83,6 +84,9 @@ function App() {
     board: newBoard(),
     turn: 0,
   }));
+  const [gameHistory, setGameHistory] = useState(() => ({
+    undoStack: [] as { board: ChussBoard; turn: number }[],
+  }));
   const [selectedPiecePos, setSelectedPiecePos] = useState<
     [number, number] | null
   >(null);
@@ -141,6 +145,7 @@ function App() {
             <button
               onClick={() => {
                 setGameState({ board: newBoard(), turn: 0 });
+                setGameHistory({ undoStack: [] });
                 setModal(null);
               }}
             >
@@ -156,6 +161,7 @@ function App() {
             <button
               onClick={() => {
                 setGameState({ board: newBoard(), turn: 0 });
+                setGameHistory({ undoStack: [] });
                 setModal(null);
               }}
             >
@@ -173,6 +179,7 @@ function App() {
             <button
               onClick={() => {
                 setGameState({ board: newBoard(), turn: 0 });
+                setGameHistory({ undoStack: [] });
                 setModal(null);
               }}
             >
@@ -195,6 +202,11 @@ function App() {
             {(['Queen', 'Rook', 'Knight', 'Bishop'] as const).map((piece) => (
               <button
                 onClick={() => {
+                  setGameHistory({
+                    undoStack: gameHistory.undoStack.concat(
+                      structuredClone(gameState)
+                    ),
+                  });
                   setGameState({
                     board: promoteAndMakeMove(
                       gameState.board,
@@ -259,6 +271,11 @@ function App() {
                       setPawnPromotionDest([y, x]);
                     } else {
                       setSelectedPiecePos(null);
+                      setGameHistory({
+                        undoStack: gameHistory.undoStack.concat(
+                          structuredClone(gameState)
+                        ),
+                      });
                       setGameState({
                         board: makeMove(
                           gameState.board,
@@ -288,6 +305,21 @@ function App() {
       <br />
       <button onClick={() => setGameState({ board: newBoard(), turn: 0 })}>
         reset
+      </button>
+      <button
+        onClick={() => {
+          const state = gameHistory.undoStack.at(-1);
+          if (!state) {
+            alert(`You're at the start, bucko!`);
+            return;
+          } else {
+            setGameState(state);
+            setGameHistory({ undoStack: gameHistory.undoStack.slice(0, -1) });
+            setSelectedPiecePos(null);
+          }
+        }}
+      >
+        undo
       </button>
       {modal ? (
         <div
