@@ -10,7 +10,6 @@ export function HomePage() {
       <br />
       <video
         style={{ width: '90vw' }}
-        ref={(e) => e?.play(0)}
         src={kino}
         autoPlay
         loop
