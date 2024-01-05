@@ -4,10 +4,10 @@ import kino from './podracing.mp4';
 export function HomePage() {
   return (
     <div>
-      now this is podrac.ing
+      <h1>now THIS is podrac.ing!!</h1>
       <br />
       <Link to="chuss">Chuss</Link>
-      <br />
+      <br /> <br />
       <video
         style={{ width: '90vw' }}
         src={kino}
