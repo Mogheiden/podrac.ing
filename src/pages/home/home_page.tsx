@@ -4,9 +4,7 @@ import kino from './podracing.mp4';
 export function HomePage() {
   return (
     <div>
-      <marquee>
-        <h1>now THIS is podrac.ing!!</h1>
-      </marquee>
+      <h1>now THIS is podrac.ing!!</h1>
       <br />
       <div>
         Created by Glup Shitto in the year 420 BBY (Before Blungus Yungus),
