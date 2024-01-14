@@ -22,6 +22,11 @@ export function HomePage() {
         playsInline
         muted
       />
+      <br /> <br />
+      <div>
+        {' '}
+        <Link to="lesson1">Lesson 1</Link>{' '}
+      </div>
     </div>
   );
 }
