@@ -1,7 +1,3 @@
-export function getChussBoard() {
-  return [];
-}
-
 const boardsize = 8;
 
 export type ChussPieceType =

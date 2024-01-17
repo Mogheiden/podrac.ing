@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { HomePage } from './pages/home/home_page';
 import { ChussPage } from './pages/chussy/chuss_page';
 import { Lesson1 } from './pages/LvCvJ/lesson1';
+import { SnekGame } from './pages/snek/snek_pej';
 
 const router = createBrowserRouter([
   {
@@ -12,6 +13,10 @@ const router = createBrowserRouter([
   {
     path: '/chuss',
     element: <ChussPage />,
+  },
+  {
+    path: '/snek',
+    element: <SnekGame />,
   },
   {
     path: '/lesson1',
