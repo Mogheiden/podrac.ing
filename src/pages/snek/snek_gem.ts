@@ -63,6 +63,15 @@ export function printBoard(state: SnekState) {
   return str;
 }
 
+export function changeDir(
+  state: SnekState,
+  dir: 'N' | 'S' | 'E' | 'W'
+): SnekState {
+  state = structuredClone(state);
+  state.direction = dir;
+  return state;
+}
+
 export function step(state: SnekState): SnekState {
   state = structuredClone(state);
   const snekHead = state.snek[0];
@@ -73,8 +82,10 @@ export function step(state: SnekState): SnekState {
     nextStep = [snekHead[0] + 1, snekHead[1]];
   } else if (state.direction === 'E') {
     nextStep = [snekHead[0], snekHead[1] + 1];
-  } else {
+  } else if (state.direction === 'W') {
     nextStep = [snekHead[0], snekHead[1] - 1];
+  } else {
+    throw new Error('Unrecognised direction bucko!');
   }
 
   if (
