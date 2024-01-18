@@ -1,18 +1,25 @@
 interface SnekState {
   snek: [number, number][];
+  digestingCrumbs: [number, number][];
   crumb: [number, number];
   direction: 'N' | 'S' | 'E' | 'W';
   score: number;
+  gameOver: boolean;
 }
 
 const boardSize = 15;
 
 export function newGame(): SnekState {
   return {
-    snek: [[Math.floor(boardSize / 2), Math.floor(boardSize / 2)]],
-    crumb: [5, 5],
+    snek: [
+      [Math.floor(boardSize / 2), Math.floor(boardSize / 2)],
+      [Math.floor(boardSize / 2), Math.floor(boardSize / 2) - 1],
+    ],
+    crumb: [7, 10],
+    digestingCrumbs: [],
     direction: 'E',
     score: 0,
+    gameOver: false,
   };
 }
 
@@ -33,6 +40,13 @@ export function printBoard(state: SnekState) {
       }
     } else if (state.snek.length > 1 && i === state.snek.length - 1) {
       str1d[stringIndex] = '8';
+    } else if (
+      state.digestingCrumbs.some(
+        (digestedCrumb) =>
+          coord[0] === digestedCrumb[0] && coord[1] === digestedCrumb[1]
+      )
+    ) {
+      str1d[stringIndex] = 'O';
     } else {
       str1d[stringIndex] = '#';
     }
@@ -47,4 +61,74 @@ export function printBoard(state: SnekState) {
     }
   });
   return str;
+}
+
+export function step(state: SnekState): SnekState {
+  state = structuredClone(state);
+  const snekHead = state.snek[0];
+  let nextStep: [number, number];
+  if (state.direction === 'N') {
+    nextStep = [snekHead[0] - 1, snekHead[1]];
+  } else if (state.direction === 'S') {
+    nextStep = [snekHead[0] + 1, snekHead[1]];
+  } else if (state.direction === 'E') {
+    nextStep = [snekHead[0], snekHead[1] + 1];
+  } else {
+    nextStep = [snekHead[0], snekHead[1] - 1];
+  }
+
+  if (
+    nextStep[0] < 0 ||
+    nextStep[0] === boardSize ||
+    nextStep[1] < 0 ||
+    nextStep[1] === boardSize
+  ) {
+    state.gameOver = true;
+    return state;
+  }
+
+  if (
+    state.snek.some(
+      (snekCoord) =>
+        snekCoord[0] === nextStep[0] && nextStep[1] === snekCoord[1]
+    )
+  ) {
+    state.gameOver = true;
+    return state;
+  }
+
+  function getCrumb() {
+    const tentativeCrumb: [number, number] = [
+      Math.floor(Math.random() * boardSize),
+      Math.floor(Math.random() * boardSize),
+    ];
+    if (
+      state.snek.some(
+        (snekCoord) =>
+          snekCoord[0] === tentativeCrumb[0] &&
+          tentativeCrumb[1] === snekCoord[1]
+      )
+    ) {
+      return getCrumb();
+    }
+    return tentativeCrumb;
+  }
+
+  if (nextStep[0] === state.crumb[0] && nextStep[1] === state.crumb[1]) {
+    state.digestingCrumbs.push(state.crumb);
+    state.score++;
+    state.crumb = getCrumb();
+  }
+
+  state.snek.unshift(nextStep);
+  if (
+    state.digestingCrumbs.length > 0 &&
+    state.digestingCrumbs[0][0] === state.snek[state.snek.length - 1][0] &&
+    state.digestingCrumbs[0][1] === state.snek[state.snek.length - 1][1]
+  ) {
+    state.digestingCrumbs.shift();
+    return state;
+  }
+  state.snek.pop();
+  return state;
 }
