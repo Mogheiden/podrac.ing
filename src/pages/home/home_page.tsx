@@ -27,6 +27,10 @@ export function HomePage() {
         {' '}
         <Link to="lesson1">Lesson 1</Link>{' '}
       </div>
+      <div>
+        {' '}
+        <Link to="snek">Lesson 2</Link>{' '}
+      </div>
     </div>
   );
 }
