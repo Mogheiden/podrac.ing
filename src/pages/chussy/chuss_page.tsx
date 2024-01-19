@@ -106,7 +106,6 @@ export function ChussPage() {
     gameState.turn,
     turnSide
   );
-  console.log('render', gameHistory);
   useEffect(() => {
     if (inCheck) {
       if (!hasAnyLegalMoves) {

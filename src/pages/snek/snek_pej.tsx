@@ -2,15 +2,26 @@ import { useEffect, useState } from 'react';
 import { changeDir, newGame, printBoard, step } from './snek_gem';
 import { Link } from 'react-router-dom';
 
+type ModalType = 'intro' | 'gameOver';
+
 export function SnekGame() {
   const [gameState, setGameState] = useState(() => newGame());
+  const [modalState, setModal] = useState<ModalType | null>('intro');
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setGameState((state) => step(state));
-    }, 500);
-    return () => clearInterval(interval);
-  }, []);
+    if (gameState.gameOver) {
+      setModal('gameOver');
+    }
+  }, [gameState]);
+
+  useEffect(() => {
+    if (!modalState) {
+      const interval = setInterval(() => {
+        setGameState((state) => step(state));
+      }, 300);
+      return () => clearInterval(interval);
+    }
+  }, [modalState]);
 
   useEffect(() => {
     const directions = (e: KeyboardEvent) => {
@@ -43,14 +54,67 @@ export function SnekGame() {
     return () => document.removeEventListener('keydown', directions);
   }, [gameState.direction]);
 
+  function renderModalContent(modal: ModalType) {
+    switch (modal) {
+      case 'intro':
+        return (
+          <>
+            <div style={{ color: 'white', fontSize: '24px' }}>
+              Welcome to Snek! Controls W A S D or Arrow Keys.
+            </div>
+            <br />
+            <button onClick={() => setModal(null)}>Begin!</button>
+          </>
+        );
+      case 'gameOver':
+        return (
+          <>
+            <div style={{ color: 'white', fontSize: '24px' }}>
+              Game over. You scored {gameState.score} points!
+            </div>
+            <br />
+            <button
+              onClick={() => {
+                setGameState(newGame());
+                setModal(null);
+              }}
+            >
+              Retry
+            </button>
+          </>
+        );
+    }
+    throw new Error('Invalid modal state');
+  }
+
   return (
-    <pre>
-      {printBoard(gameState)
-        .split('\n')
-        .map((row) => (
-          <div>{row}</div>
-        ))}
-      <Link to="/">bepis</Link>
-    </pre>
+    <div>
+      <pre>
+        {printBoard(gameState)
+          .split('\n')
+          .map((row) => (
+            <div>{row}</div>
+          ))}
+        <Link to="/">bepis</Link>
+      </pre>
+
+      {modalState ? (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: '#000000BB',
+          }}
+        >
+          <div>{renderModalContent(modalState)}</div>
+        </div>
+      ) : undefined}
+    </div>
   );
 }
