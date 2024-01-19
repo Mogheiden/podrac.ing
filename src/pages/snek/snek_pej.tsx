@@ -62,7 +62,7 @@ export function SnekGame() {
         return (
           <>
             <div style={{ color: 'white', fontSize: '24px' }}>
-              Welcome to Snek! Controls W A S D or Arrow Keys.
+              Welcome to Snek! Use W A S D or Arrow Keys.
             </div>
             <br />
             <button onClick={() => setModal(null)}>Begin!</button>
@@ -115,10 +115,18 @@ export function SnekGame() {
             left: 0,
             width: '100vw',
             height: '100vh',
-            backgroundColor: '#000000BB',
           }}
         >
-          <div>{renderModalContent(modalState)}</div>
+          <div
+            style={{
+              backgroundColor: '#000000BB',
+              maxWidth: 200,
+              padding: 10,
+              borderRadius: 5,
+            }}
+          >
+            {renderModalContent(modalState)}
+          </div>
         </div>
       ) : undefined}
     </div>
