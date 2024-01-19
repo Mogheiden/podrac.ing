@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { changeDir, newGame, printBoard, step } from './snek_gem';
-import { Link } from 'react-router-dom';
 
 type ModalType = 'intro' | 'gameOver';
 
 export function SnekGame() {
   const [gameState, setGameState] = useState(() => newGame());
   const [modalState, setModal] = useState<ModalType | null>('intro');
+  const [highScore, setHighScore] = useState(() =>
+    parseInt(localStorage.getItem('highScore') ?? '0')
+  );
 
   useEffect(() => {
     if (gameState.gameOver) {
@@ -67,6 +69,10 @@ export function SnekGame() {
           </>
         );
       case 'gameOver':
+        if (gameState.score > highScore) {
+          localStorage.setItem('highScore', gameState.score.toString());
+          setHighScore(gameState.score);
+        }
         return (
           <>
             <div style={{ color: 'white', fontSize: '24px' }}>
@@ -95,7 +101,7 @@ export function SnekGame() {
           .map((row) => (
             <div>{row}</div>
           ))}
-        <Link to="/">bepis</Link>
+        Score: {gameState.score} High Score: {highScore}
       </pre>
 
       {modalState ? (
