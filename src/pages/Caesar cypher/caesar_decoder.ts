@@ -13,6 +13,9 @@ spellchecker.use(DICT);
 // console.log(spellchecker.check('blungus'));
 
 export function caesarDecoder(importString: string): string {
+  if (!importString) {
+    return '';
+  }
   const numCorrect = [];
   for (let i = 0; i < 26; i++) {
     const newString = caesarShift(importString, i);
@@ -25,18 +28,22 @@ export function caesarDecoder(importString: string): string {
   }
   const bestIndex = numCorrect.indexOf(Math.max(...numCorrect));
   if (numCorrect[bestIndex] <= 1 && importString.split(' ').length > 2) {
-    console.log('No result found');
+    return 'No result found';
   } else if (bestIndex === 0) {
-    console.log('This was already an english sentence you sussy baka!');
+    return 'This was already an english sentence you sussy baka!';
   } else {
-    console.log(
-      caesarShift(importString, numCorrect.indexOf(Math.max(...numCorrect))),
-      `This was shifted ${bestIndex} places.`
+    const decoded = caesarShift(
+      importString,
+      numCorrect.indexOf(Math.max(...numCorrect))
     );
+    return `${decoded} This was shifted ${26 - bestIndex} places.`;
   }
 }
 
-function caesarShift(encoded: string, shiftSize: number): string {
+export function caesarShift(encoded: string, shiftSize: number): string {
+  if (isNaN(shiftSize)) {
+    return "You didn't enter a number you Cummeian illiterate!";
+  }
   let shiftString = '';
   for (const char of encoded) {
     const index = alphabet.indexOf(char.toLocaleLowerCase());
