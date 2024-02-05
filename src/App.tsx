@@ -5,6 +5,7 @@ import { ChussPage } from './pages/chussy/chuss_page';
 import { Lesson1 } from './pages/LvCvJ/lesson1';
 import { SnekGame } from './pages/snek/snek_pej';
 import { CaesarPage } from './pages/Caesar cypher/caesar_page';
+import { Nldle } from './pages/NLDLE/NL_page';
 
 const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
   {
     path: '/lesson1',
     element: <Lesson1 />,
+  },
+  {
+    path: '/nldle',
+    element: <Nldle />,
   },
 ]);
 
