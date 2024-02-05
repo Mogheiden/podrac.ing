@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ReactCardFlip from 'react-card-flip';
 
 const months = [
   'January',
@@ -69,20 +70,18 @@ function GuessLine(props: {
   const [_month, setMonth] = useState<Month | undefined>();
   const guess = props.submittedGuess ?? { year: _year, month: _month };
 
-  if (props.mode === 'hidden') {
-    return (
-      <div
-        style={{
-          height: 40,
-          marginBottom: 10,
-          backgroundColor: 'gray',
-          borderRadius: 10,
-        }}
-      ></div>
-    );
-  }
+  const back = (
+    <div
+      style={{
+        height: 40,
+        marginBottom: 10,
+        backgroundColor: 'gray',
+        borderRadius: 10,
+      }}
+    ></div>
+  );
 
-  return (
+  const front = (
     <div style={{ height: 40, marginBottom: 10 }}>
       <select
         style={{ fontSize: 20 }}
@@ -130,6 +129,12 @@ function GuessLine(props: {
       </span>
     </div>
   );
+  return (
+    <ReactCardFlip isFlipped={props.mode === 'hidden'} flipDirection="vertical">
+      {front}
+      {back}
+    </ReactCardFlip>
+  );
 }
 
 function distance(
@@ -152,7 +157,8 @@ function distance(
 
 function renderDistanceIndicator(distance: number) {
   return (
-    <div
+    <button
+      disabled={true}
       style={{
         width: '100%',
         height: '100%',
@@ -165,6 +171,8 @@ function renderDistanceIndicator(distance: number) {
         })(),
         borderRadius: 10,
         color: 'rgba(0,0,0,0.5)',
+        minHeight: 0,
+        maxHeight: '100%',
       }}
     >
       {(() => {
@@ -176,7 +184,7 @@ function renderDistanceIndicator(distance: number) {
         }
         return '✓';
       })()}
-    </div>
+    </button>
   );
 }
 
