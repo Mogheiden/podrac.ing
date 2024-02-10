@@ -32,9 +32,39 @@ const allowedGuesses = 6;
 
 export function Nldle() {
   const [submittedGuesses, setSubmittedGuesses] = useState<Guess[]>([]);
-
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const carouselContent = [
+    <div>1</div>,
+    <div>2</div>,
+    <div>3</div>,
+    <div>4</div>,
+    <div>5</div>,
+    <div>6</div>,
+  ];
+  console.log(submittedGuesses.length, carouselIndex);
   return (
     <>
+      <div>{carouselContent[carouselIndex]}</div>
+      <button
+        onClick={() => setCarouselIndex((n) => n - 1)}
+        disabled={carouselIndex === 0}
+      >
+        {'<'}
+      </button>
+      {carouselContent.map((_, i) => (
+        <button
+          onClick={() => setCarouselIndex(i)}
+          disabled={i > submittedGuesses.length}
+        >
+          {i + 1}
+        </button>
+      ))}
+      <button
+        onClick={() => setCarouselIndex((n) => n + 1)}
+        disabled={carouselIndex >= submittedGuesses.length}
+      >
+        {'>'}
+      </button>
       {new Array(allowedGuesses).fill(0).map((_, i) => {
         const currentGuessIdx = submittedGuesses.length;
         return (
@@ -46,6 +76,7 @@ export function Nldle() {
             })()}
             submittedGuess={submittedGuesses[i]}
             submitGuess={(guess) => {
+              setCarouselIndex(submittedGuesses.length + 1);
               setSubmittedGuesses(
                 submittedGuesses.concat({
                   ...guess,
