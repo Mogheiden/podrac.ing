@@ -16,6 +16,8 @@ const months = [
   'December',
 ] as const;
 
+type ModalType = 'intro' | 'gameOver' | 'youWin';
+
 type Month = (typeof months)[number];
 
 const arrayRange = (start: number, stop: number, step: number) =>
@@ -33,6 +35,7 @@ const allowedGuesses = 6;
 export function Nldle() {
   const [submittedGuesses, setSubmittedGuesses] = useState<Guess[]>([]);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [modalState, setModalState] = useState<ModalType | null>('intro');
   const carouselContent = [
     <div>1</div>,
     <div>2</div>,
@@ -41,7 +44,41 @@ export function Nldle() {
     <div>5</div>,
     <div>6</div>,
   ];
-  console.log(submittedGuesses.length, carouselIndex);
+  function renderModalContent(modal: ModalType) {
+    switch (modal) {
+      case 'intro':
+        return (
+          <>
+            <div style={{ color: 'white', fontSize: '24px' }}>
+              Welcome to NLdle, one man's mental illness. Guess the month and
+              year of publication from enelle's catalog!
+            </div>
+            <br />
+            <button onClick={() => setModalState(null)}>Begin!</button>
+          </>
+        );
+      case 'gameOver':
+        return (
+          <>
+            <div style={{ color: 'white', fontSize: '24px' }}>
+              Better luck next time!
+            </div>
+            <br />
+            <button onClick={() => setModalState(null)}>OK</button>
+          </>
+        );
+      case 'youWin':
+        return (
+          <>
+            <div style={{ color: 'white', fontSize: '24px' }}>
+              Congratulations!
+            </div>
+            <br />
+            <button onClick={() => setModalState(null)}>Fantastic!</button>
+          </>
+        );
+    }
+  }
   return (
     <>
       <div>{carouselContent[carouselIndex]}</div>
@@ -87,6 +124,31 @@ export function Nldle() {
           />
         );
       })}
+      {modalState ? (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#000000BB',
+              maxWidth: 200,
+              padding: 10,
+              borderRadius: 5,
+            }}
+          >
+            {renderModalContent(modalState)}
+          </div>
+        </div>
+      ) : undefined}
     </>
   );
 }
