@@ -6,6 +6,7 @@ import { Lesson1 } from './pages/LvCvJ/lesson1';
 import { SnekGame } from './pages/snek/snek_pej';
 import { CaesarPage } from './pages/Caesar cypher/caesar_page';
 import { Nldle } from './pages/NLDLE/NL_page';
+import { WordCloud } from './pages/WordCloud/WordCloud';
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
   {
     path: '/nldle',
     element: <Nldle />,
+  },
+  {
+    path: '/wordcloud',
+    element: <WordCloud />,
   },
 ]);
 
