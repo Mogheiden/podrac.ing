@@ -84,7 +84,7 @@ function EncodingSection() {
 //         </label>
 //         <hr />
 //         <button type="reset">Reset edits</button>
-//         <button type="submit">Save post</button>
+//         < type="submit">Save post</button>
 //       </form>
 //       <div>{output}</div>
 //     </>
