@@ -6,16 +6,20 @@ function makeSortedArray(input: string, commonWords: Set<string>): string[] {
   const wordMap = new Map<string, number>();
   input.split(' ').forEach((word) => {
     word = word.toLocaleLowerCase();
-    if (/[^a-zA-Z0-9]$/.test(word.slice(-1))) {
+    while (/[^a-zA-Z]$/.test(word.slice(-1))) {
       word = word.slice(0, -1);
+    }
+    if (/[^a-zA-Z0-9]$/.test(word[0])) {
+      word = word.substring(1);
     }
     if (word.length > 2 && !commonWords.has(word)) {
       wordMap.set(word, (wordMap.get(word) ?? 0) + 1);
     }
   });
-  return Array.from(wordMap.keys()).sort(
-    (a, b) => wordMap.get(b)! - wordMap.get(a)!
-  );
+  console.log(wordMap);
+  return Array.from(wordMap.keys())
+    .sort((a, b) => wordMap.get(b)! - wordMap.get(a)!)
+    .slice(0, 100);
 }
 
 export function WordCloud() {
@@ -33,13 +37,15 @@ export function WordCloud() {
     <div>
       <textarea
         name="postContent"
-        defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+        placeholder="Please insert words here."
         rows={10}
         cols={50}
         onChange={(e) => (textField.current = e.target.value)}
       />
-      <button onClick={() => submitText(textField.current)}>submit</button>
+      <button onClick={() => submitText(textField.current)}>Submit</button>
+      <button onClick={() => print()}>Print</button>
       <div
+        className="printable"
         style={{
           width,
           height,
@@ -76,7 +82,7 @@ export function WordCloud() {
                 wordHeight
               );
               let numOutOfBounds = 0;
-              while (numOutOfBounds < 5) {
+              while (numOutOfBounds < 10) {
                 let dx = 0.5 - Math.random();
                 let dy = 0.5 - Math.random();
                 const l = Math.sqrt(dx * dx + dy * dy);
@@ -110,18 +116,18 @@ export function WordCloud() {
   );
 }
 
-function getFontSize(index: number, maxSize: number, wordCount: number) {
+function getFontSize(index: number, fontSize: number, wordCount: number) {
   if (index === 0) {
-    return maxSize * 1.2;
+    return fontSize * 2;
   }
   if (index === 1 || index === 2) {
-    return maxSize;
+    return fontSize;
   }
   if (index < wordCount / 3) {
-    return Math.floor(maxSize * 0.8);
+    return Math.floor(fontSize * 1);
   }
   if (index < (wordCount / 3) * 2) {
-    return Math.floor(maxSize * 0.6);
+    return Math.floor(fontSize * 0.5);
   }
-  return Math.floor(maxSize * 0.5);
+  return Math.floor(fontSize * 0.3);
 }
