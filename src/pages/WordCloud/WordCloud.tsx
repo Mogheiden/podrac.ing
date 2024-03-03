@@ -1,4 +1,4 @@
-import { Box, System } from 'detect-collisions';
+import { System } from 'detect-collisions';
 import { commonWords } from './commonWords';
 import { useRef, useState } from 'react';
 
@@ -21,10 +21,13 @@ function makeSortedArray(input: string, commonWords: Set<string>): string[] {
 export function WordCloud() {
   const textField = useRef('');
   const [submittedText, submitText] = useState('');
-
+  const colours = ['#002664', '#146cfd', '#8ce0ff', '#8055f1'];
   const words = makeSortedArray(submittedText, commonWords);
 
   const system = new System();
+
+  const width = 800;
+  const height = 450;
 
   return (
     <div>
@@ -36,32 +39,67 @@ export function WordCloud() {
         onChange={(e) => (textField.current = e.target.value)}
       />
       <button onClick={() => submitText(textField.current)}>submit</button>
-      <div style={{}}>
+      <div
+        style={{
+          width,
+          height,
+          position: 'relative',
+          border: 'solid',
+          borderRadius: 5,
+          background: 'whitesmoke',
+        }}
+      >
         {words.map((word, i) => (
           <div
             style={{
               position: 'absolute',
               top: 0,
               left: 0,
-              padding: 1,
+              padding: 3,
               fontFamily: 'Public Sans',
               fontSize: getFontSize(i, 36, words.length),
+              lineHeight: '100%',
+              color: colours[i % colours.length],
             }}
             ref={(el) => {
               if (!el) return;
-              const { width, height } = el.getBoundingClientRect();
-              const box = system.createBox({ x: 0, y: 0 }, width, height);
-              let dx = 0.5 - Math.random();
-              let dy = 0.5 - Math.random();
-              const l = Math.sqrt(dx * dx + dy * dy);
-              dx /= l;
-              dy /= l;
-              while (system.checkOne(box)) {
-                box.setPosition(box.pos.x + dx, box.pos.y + dy);
+              const { width: wordWidth, height: wordHeight } =
+                el.getBoundingClientRect();
+              const initialBoxPos = { x: width / 2, y: height / 2 };
+              if (i === 0) {
+                initialBoxPos.x -= wordWidth / 2;
+                initialBoxPos.y -= wordHeight / 2;
+              }
+              const box = system.createBox(
+                initialBoxPos,
+                wordWidth,
+                wordHeight
+              );
+              let numOutOfBounds = 0;
+              while (numOutOfBounds < 5) {
+                let dx = 0.5 - Math.random();
+                let dy = 0.5 - Math.random();
+                const l = Math.sqrt(dx * dx + dy * dy);
+                dx /= l;
+                dy /= l;
+                while (system.checkOne(box)) {
+                  box.setPosition(box.pos.x + dx, box.pos.y + dy);
+                }
+                if (
+                  box.pos.x + wordWidth > width ||
+                  box.pos.x < 0 ||
+                  box.pos.y + wordHeight > height ||
+                  box.pos.y < 0
+                ) {
+                  box.setPosition(initialBoxPos.x, initialBoxPos.y);
+                  numOutOfBounds += 1;
+                  continue;
+                }
+                break;
               }
               box.isStatic = true;
-              el.style.left = `${box.pos.x + 300}px`;
-              el.style.top = `${box.pos.y + 300}px`;
+              el.style.left = `${box.pos.x}px`;
+              el.style.top = `${box.pos.y}px`;
             }}
           >
             {word}
