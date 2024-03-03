@@ -21,7 +21,7 @@ function makeSortedArray(input: string, commonWords: Set<string>): string[] {
 export function WordCloud() {
   const textField = useRef('');
   const [submittedText, submitText] = useState('');
-  const colours = ['#002664', '#146cfd', '#8ce0ff', '#8055f1'];
+  const colours = ['#146cfd', '#002664', '#8ce0ff', '#8055f1'];
   const words = makeSortedArray(submittedText, commonWords);
 
   const system = new System();
@@ -33,7 +33,7 @@ export function WordCloud() {
     <div>
       <textarea
         name="postContent"
-        defaultValue="I really enjoyed biking yesterday!"
+        defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
         rows={10}
         cols={50}
         onChange={(e) => (textField.current = e.target.value)}
