@@ -2,7 +2,7 @@ import { System } from 'detect-collisions';
 import { commonWords } from './commonWords';
 import { useRef, useState } from 'react';
 
-function makeSortedArray(input: string, commonWords: Set<string>): string[] {
+function makeSortedArray(input: string, commonWords: Set<string>) {
   const wordMap = new Map<string, number>();
   input.split(' ').forEach((word) => {
     word = word.toLocaleLowerCase();
@@ -20,16 +20,24 @@ function makeSortedArray(input: string, commonWords: Set<string>): string[] {
     }
   });
   console.log(wordMap);
-  return Array.from(wordMap.keys())
+  const top100 = Array.from(wordMap.keys())
     .sort((a, b) => wordMap.get(b)! - wordMap.get(a)!)
-    .slice(0, 75);
+    .slice(0, 100);
+  const wordOccurrences = top100.reduce(
+    (sum, current) => sum + wordMap.get(current)!,
+    0
+  );
+  return [wordMap, top100, wordOccurrences] as const;
 }
 
 export function WordCloud() {
   const textField = useRef('');
   const [submittedText, submitText] = useState('');
   const colours = ['#146cfd', '#002664', '#8ce0ff', '#8055f1'];
-  const words = makeSortedArray(submittedText, commonWords);
+  const [wordMap, words, wordCount] = makeSortedArray(
+    submittedText,
+    commonWords
+  );
 
   const system = new System();
 
@@ -66,7 +74,7 @@ export function WordCloud() {
               left: 0,
               padding: 3,
               fontFamily: 'Public Sans',
-              fontSize: getFontSize(i, 36, words.length),
+              fontSize: getFontSize(i, wordMap.get(word)!, wordCount),
               lineHeight: '100%',
               color: colours[i % colours.length],
             }}
@@ -119,18 +127,13 @@ export function WordCloud() {
   );
 }
 
-function getFontSize(index: number, fontSize: number, wordCount: number) {
+function getFontSize(index: number, wordFrequency: number, wordCount: number) {
+  const initialSize = Math.floor(36 * (wordFrequency / wordCount));
   if (index === 0) {
-    return fontSize * 2;
+    return initialSize + 10;
   }
   if (index === 1 || index === 2) {
-    return fontSize;
+    return initialSize + 5;
   }
-  if (index < wordCount / 3) {
-    return Math.floor(fontSize * 1);
-  }
-  if (index < (wordCount / 3) * 2) {
-    return Math.floor(fontSize * 0.5);
-  }
-  return Math.floor(fontSize * 0.3);
+  return initialSize;
 }
