@@ -19,7 +19,7 @@ function makeSortedArray(input: string, commonWords: Set<string>): string[] {
   console.log(wordMap);
   return Array.from(wordMap.keys())
     .sort((a, b) => wordMap.get(b)! - wordMap.get(a)!)
-    .slice(0, 100);
+    .slice(0, 75);
 }
 
 export function WordCloud() {
@@ -82,7 +82,7 @@ export function WordCloud() {
                 wordHeight
               );
               let numOutOfBounds = 0;
-              while (numOutOfBounds < 10) {
+              while (numOutOfBounds < 20) {
                 let dx = 0.5 - Math.random();
                 let dy = 0.5 - Math.random();
                 const l = Math.sqrt(dx * dx + dy * dy);
