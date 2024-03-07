@@ -9,6 +9,9 @@ function makeSortedArray(input: string, commonWords: Set<string>): string[] {
     while (/[^a-zA-Z]$/.test(word.slice(-1))) {
       word = word.slice(0, -1);
     }
+    if (word.endsWith('s') && !word.endsWith('ss')) {
+      word = word.slice(0, -1);
+    }
     if (/[^a-zA-Z0-9]$/.test(word[0])) {
       word = word.substring(1);
     }
