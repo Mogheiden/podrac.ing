@@ -128,7 +128,7 @@ export function WordCloud() {
 }
 
 function getFontSize(index: number, wordFrequency: number, wordCount: number) {
-  const initialSize = Math.floor(36 * (wordFrequency / wordCount));
+  const initialSize = Math.floor(150 * (wordFrequency / wordCount));
   if (index === 0) {
     return initialSize + 10;
   }
