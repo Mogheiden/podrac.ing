@@ -1,6 +1,7 @@
 export const commonWords = new Set([
   'put',
   'will',
+  'every',
   'said',
   'and',
   'but',
