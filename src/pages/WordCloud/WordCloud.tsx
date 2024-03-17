@@ -19,7 +19,11 @@ import {
 } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 
-function makeSortedArray(input: string, commonWords: Set<string>) {
+function makeSortedArray(
+  input: string,
+  filter: Set<string>,
+  commonWords: Set<string>
+) {
   const wordMap = new Map<string, number>();
   input.split(' ').forEach((word) => {
     word = word.toLocaleLowerCase();
@@ -35,7 +39,7 @@ function makeSortedArray(input: string, commonWords: Set<string>) {
     if (/[^a-zA-Z0-9]$/.test(word[0])) {
       word = word.substring(1);
     }
-    if (word.length > 2 && !commonWords.has(word)) {
+    if (word.length > 2 && !commonWords.has(word) && !filter.has(word)) {
       wordMap.set(word, (wordMap.get(word) ?? 0) + 1);
     }
   });
@@ -102,7 +106,9 @@ type ColorScheme = keyof typeof colorSchemes;
 
 export function WordCloud() {
   const textField = useRef('');
+  const filterText = useRef('');
   const [submittedText, submitText] = useState('');
+  const [submittedFilter, submitFilter] = useState<Set<string>>(new Set());
   const [colorSchemeKey, setColorScheme] = useState<ColorScheme | 'Custom'>(
     'Kingfisher'
   );
@@ -118,6 +124,7 @@ export function WordCloud() {
       : colorSchemes[colorSchemeKey];
   const [wordMap, words, wordCount] = makeSortedArray(
     submittedText,
+    submittedFilter,
     commonWords
   );
 
@@ -141,8 +148,28 @@ export function WordCloud() {
         />
       </div>
       <br></br>
+      <div>
+        <textarea
+          name="filterContent"
+          placeholder="Please specify filter words."
+          rows={1}
+          cols={50}
+          onChange={(e) => (filterText.current = e.target.value)}
+          style={{ border: '1px lightgrey solid', borderRadius: 5, padding: 8 }}
+        />
+      </div>
+      <br></br>
       <ButtonGroup>
-        <Button onClick={() => submitText(textField.current)}>Submit</Button>
+        <Button
+          onClick={() => {
+            submitFilter(
+              new Set(filterText.current.toLocaleLowerCase().split(' '))
+            );
+            submitText(textField.current);
+          }}
+        >
+          Submit
+        </Button>
         <Button onClick={() => print()}>Print</Button>
         <Menu>
           <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
