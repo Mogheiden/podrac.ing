@@ -4,6 +4,8 @@ import { useRef, useState } from 'react';
 import {
   Button,
   ButtonGroup,
+  FormControl,
+  FormLabel,
   Heading,
   Menu,
   MenuButton,
@@ -16,13 +18,19 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
 } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 
 function makeSortedArray(
   input: string,
   filter: Set<string>,
-  commonWords: Set<string>
+  commonWords: Set<string>,
+  maxWords: number
 ) {
   const wordMap = new Map<string, number>();
   input.split(' ').forEach((word) => {
@@ -44,15 +52,16 @@ function makeSortedArray(
     }
   });
   console.log(wordMap);
-  const top100 = Array.from(wordMap.keys())
+  const top = Array.from(wordMap.keys())
     .sort((a, b) => wordMap.get(b)! - wordMap.get(a)!)
-    .slice(0, 100);
-  const wordOccurrences = top100.reduce(
+    .slice(0, maxWords);
+  const wordOccurrences = top.reduce(
     (sum, current) => sum + wordMap.get(current)!,
     0
   );
-  return [wordMap, top100, wordOccurrences] as const;
+  return [wordMap, top, wordOccurrences] as const;
 }
+const defaultNumberWords = 100;
 
 const allColourCodes = [
   '#22272b',
@@ -107,6 +116,8 @@ type ColorScheme = keyof typeof colorSchemes;
 export function WordCloud() {
   const textField = useRef('');
   const filterText = useRef('');
+  const maxWordsText = useRef(defaultNumberWords);
+  const [maxWords, setMaxWords] = useState(defaultNumberWords);
   const [submittedText, submitText] = useState('');
   const [submittedFilter, submitFilter] = useState<Set<string>>(new Set());
   const [colorSchemeKey, setColorScheme] = useState<ColorScheme | 'Custom'>(
@@ -125,7 +136,8 @@ export function WordCloud() {
   const [wordMap, words, wordCount] = makeSortedArray(
     submittedText,
     submittedFilter,
-    commonWords
+    commonWords,
+    maxWords
   );
 
   const system = new System();
@@ -134,29 +146,64 @@ export function WordCloud() {
   const height = 450;
 
   return (
-    <div>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column',
+      }}
+    >
       <Heading size="3xl">Word Cloud Generator</Heading>
       <br></br>
-      <div>
+      <FormControl style={{ width: 700 }}>
+        <FormLabel>Enter text here:</FormLabel>
         <textarea
           name="postContent"
           placeholder="Please insert words here."
           rows={10}
-          cols={50}
           onChange={(e) => (textField.current = e.target.value)}
-          style={{ border: '1px lightgrey solid', borderRadius: 5, padding: 8 }}
+          style={{
+            border: '1px lightgrey solid',
+            borderRadius: 5,
+            padding: 8,
+            width: '100%',
+          }}
         />
-      </div>
+      </FormControl>
       <br></br>
-      <div>
-        <textarea
-          name="filterContent"
-          placeholder="Please specify filter words."
-          rows={1}
-          cols={50}
-          onChange={(e) => (filterText.current = e.target.value)}
-          style={{ border: '1px lightgrey solid', borderRadius: 5, padding: 8 }}
-        />
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <FormControl style={{ width: 'auto' }}>
+          <FormLabel>Filter Words:</FormLabel>
+          <textarea
+            name="filterContent"
+            placeholder="Please specify filter words."
+            rows={1}
+            cols={50}
+            onChange={(e) => (filterText.current = e.target.value)}
+            style={{
+              border: '1px lightgrey solid',
+              borderRadius: 5,
+              padding: 8,
+              marginRight: 20,
+            }}
+          />
+        </FormControl>
+        <FormControl style={{ width: 'auto' }}>
+          <FormLabel>Max word count:</FormLabel>
+          <NumberInput
+            onChange={(_, n) => (maxWordsText.current = n)}
+            defaultValue={defaultNumberWords}
+            min={5}
+            max={120}
+            style={{ width: 150 }}
+          >
+            <NumberInputField />
+            <NumberInputStepper>
+              <NumberIncrementStepper />
+              <NumberDecrementStepper />
+            </NumberInputStepper>
+          </NumberInput>
+        </FormControl>
       </div>
       <br></br>
       <ButtonGroup>
@@ -166,6 +213,7 @@ export function WordCloud() {
               new Set(filterText.current.toLocaleLowerCase().split(' '))
             );
             submitText(textField.current);
+            setMaxWords(maxWordsText.current);
           }}
         >
           Submit
