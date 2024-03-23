@@ -29,7 +29,7 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import { ChevronDownIcon } from '@chakra-ui/icons';
+import { ChevronDownIcon, DownloadIcon } from '@chakra-ui/icons';
 import { WordCloudBox } from './WordCloudBox';
 import { ColorScheme, allColourCodes, colorSchemes } from './colorSchemes';
 import { commonWords } from './commonWords';
@@ -278,6 +278,7 @@ export function WordCloud() {
             link.click();
           }}
           isDisabled={!submittedText}
+          rightIcon={<DownloadIcon />}
         >
           Download
         </Button>
