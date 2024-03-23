@@ -21,16 +21,27 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
 } from '@chakra-ui/react';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import { WordCloudBox } from './WordCloudBox';
 import { ColorScheme, allColourCodes, colorSchemes } from './colorSchemes';
+import { commonWords } from './commonWords';
+import { makeSortedArray } from './sortWords';
 
 const defaultNumberWords = 100;
 
+type ModalType = 'customColor' | 'stats';
+
 export function WordCloud() {
   const textField = useRef('');
-  const filterText = useRef('');
+  const [filterText, setFilterText] = useState('');
   const maxWordsText = useRef(defaultNumberWords);
   const [maxWords, setMaxWords] = useState(defaultNumberWords);
   const [submittedText, submitText] = useState('');
@@ -43,13 +54,136 @@ export function WordCloud() {
     string[]
   >([]);
 
-  const [modal, setModal] = useState<boolean>(false);
+  const [modal, setModal] = useState<ModalType | null>(null);
 
   const colorScheme =
     colorSchemeKey === 'Custom'
       ? customColorScheme
       : colorSchemes[colorSchemeKey];
-
+  function renderModal(modal: ModalType) {
+    switch (modal) {
+      case 'customColor':
+        return (
+          <ModalContent>
+            <ModalHeader>Custom Colour Scheme</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              {new Array(4).fill(0).map((_, i) => (
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    rightIcon={<ChevronDownIcon />}
+                    style={{ width: 180, marginRight: 10, marginBottom: 10 }}
+                  >
+                    Colour {i + 1}:{' '}
+                    <span
+                      style={{
+                        position: 'absolute',
+                        display: 'inline-block',
+                        height: 24,
+                        width: 24,
+                        backgroundColor: customColorSchemeInput[i],
+                        marginLeft: 6,
+                        borderRadius: 5,
+                        marginTop: -3,
+                      }}
+                    />
+                  </MenuButton>
+                  <MenuList
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      minWidth: 'unset',
+                      maxWidth: 124,
+                    }}
+                  >
+                    {allColourCodes.map((color) => (
+                      <MenuItem
+                        onClick={() =>
+                          setCustomColorSchemeInput((arr) => {
+                            arr = structuredClone(arr);
+                            arr[i] = color;
+                            return arr;
+                          })
+                        }
+                        style={{
+                          height: 24,
+                          width: 24,
+                          backgroundColor: color,
+                          marginRight: 3,
+                          marginLeft: 3,
+                          marginBottom: 6,
+                          borderRadius: 5,
+                        }}
+                      ></MenuItem>
+                    ))}
+                  </MenuList>
+                </Menu>
+              ))}
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                onClick={() => {
+                  setCustomColorScheme(customColorSchemeInput);
+                  setColorScheme('Custom');
+                  setModal(null);
+                }}
+              >
+                Set Colour Scheme
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        );
+      case 'stats': {
+        const [wordMap, words] = makeSortedArray(
+          submittedText,
+          new Set(),
+          commonWords,
+          200
+        );
+        const currentFilter = new Set(filterText.toLowerCase().split(' '));
+        return (
+          <ModalContent>
+            <ModalHeader>Words</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <TableContainer>
+                <Table variant="simple">
+                  <Thead>
+                    <Tr>
+                      <Th>Word</Th>
+                      <Th isNumeric>Count</Th>
+                      <Th></Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {words.map((word) => (
+                      <Tr>
+                        <Td>{word}</Td>
+                        <Td>{wordMap.get(word)}</Td>
+                        <Td>
+                          <Button
+                            isDisabled={currentFilter.has(word)}
+                            onClick={() =>
+                              setFilterText((text) =>
+                                (text + ' ' + word).trim()
+                              )
+                            }
+                          >
+                            Filter
+                          </Button>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </TableContainer>
+            </ModalBody>
+          </ModalContent>
+        );
+      }
+    }
+  }
   return (
     <div
       style={{
@@ -80,11 +214,12 @@ export function WordCloud() {
         <FormControl style={{ width: 'auto' }}>
           <FormLabel>Filter Words:</FormLabel>
           <textarea
+            value={filterText}
             name="filterContent"
             placeholder="Please specify filter words."
             rows={1}
             cols={50}
-            onChange={(e) => (filterText.current = e.target.value)}
+            onChange={(e) => setFilterText(e.target.value)}
             style={{
               border: '1px lightgrey solid',
               borderRadius: 5,
@@ -114,14 +249,15 @@ export function WordCloud() {
       <ButtonGroup>
         <Button
           onClick={() => {
-            submitFilter(
-              new Set(filterText.current.toLocaleLowerCase().split(' '))
-            );
+            submitFilter(new Set(filterText.toLocaleLowerCase().split(' ')));
             submitText(textField.current);
             setMaxWords(maxWordsText.current);
           }}
         >
           Submit
+        </Button>
+        <Button onClick={() => setModal('stats')} isDisabled={!submittedText}>
+          Stats
         </Button>
         <Button onClick={() => print()}>Print</Button>
         <Menu>
@@ -148,7 +284,7 @@ export function WordCloud() {
                 ))}
               </MenuItem>
             ))}
-            <MenuItem onClick={() => setModal(true)}>
+            <MenuItem onClick={() => setModal('customColor')}>
               Custom &nbsp;&nbsp;
               {customColorScheme?.map((color) => (
                 <span
@@ -172,77 +308,9 @@ export function WordCloud() {
         maxWords={maxWords}
         colorScheme={colorScheme}
       />
-      <Modal isOpen={modal} onClose={() => setModal(false)}>
+      <Modal isOpen={modal != null} onClose={() => setModal(null)}>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Custom Colour Scheme</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            {new Array(4).fill(0).map((_, i) => (
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  rightIcon={<ChevronDownIcon />}
-                  style={{ width: 180, marginRight: 10, marginBottom: 10 }}
-                >
-                  Colour {i + 1}:{' '}
-                  <span
-                    style={{
-                      position: 'absolute',
-                      display: 'inline-block',
-                      height: 24,
-                      width: 24,
-                      backgroundColor: customColorSchemeInput[i],
-                      marginLeft: 6,
-                      borderRadius: 5,
-                      marginTop: -3,
-                    }}
-                  />
-                </MenuButton>
-                <MenuList
-                  style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    minWidth: 'unset',
-                    maxWidth: 124,
-                  }}
-                >
-                  {allColourCodes.map((color) => (
-                    <MenuItem
-                      onClick={() =>
-                        setCustomColorSchemeInput((arr) => {
-                          arr = structuredClone(arr);
-                          arr[i] = color;
-                          return arr;
-                        })
-                      }
-                      style={{
-                        height: 24,
-                        width: 24,
-                        backgroundColor: color,
-                        marginRight: 3,
-                        marginLeft: 3,
-                        marginBottom: 6,
-                        borderRadius: 5,
-                      }}
-                    ></MenuItem>
-                  ))}
-                </MenuList>
-              </Menu>
-            ))}
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              onClick={() => {
-                setCustomColorScheme(customColorSchemeInput);
-                setColorScheme('Custom');
-                setModal(false);
-              }}
-            >
-              Set Colour Scheme
-            </Button>
-          </ModalFooter>
-        </ModalContent>
+        {modal == null ? null : renderModal(modal)}
       </Modal>
     </div>
   );
