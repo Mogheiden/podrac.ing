@@ -34,6 +34,7 @@ import { WordCloudBox } from './WordCloudBox';
 import { ColorScheme, allColourCodes, colorSchemes } from './colorSchemes';
 import { commonWords } from './commonWords';
 import { makeSortedArray } from './sortWords';
+import html2canvas from 'html2canvas';
 
 const defaultNumberWords = 100;
 
@@ -55,6 +56,8 @@ export function WordCloud() {
   >([]);
 
   const [modal, setModal] = useState<ModalType | null>(null);
+
+  const wordCloudDiv = useRef<HTMLDivElement | null>(null);
 
   const colorScheme =
     colorSchemeKey === 'Custom'
@@ -184,6 +187,8 @@ export function WordCloud() {
       }
     }
   }
+  const width = 800;
+  const height = 450;
   return (
     <div
       style={{
@@ -259,7 +264,23 @@ export function WordCloud() {
         <Button onClick={() => setModal('stats')} isDisabled={!submittedText}>
           Stats
         </Button>
-        <Button onClick={() => print()}>Print</Button>
+        <Button
+          onClick={async () => {
+            const canvas = await html2canvas(wordCloudDiv.current!);
+            const link = document.createElement('a');
+            link.setAttribute('download', 'wordcloud.png');
+            link.setAttribute(
+              'href',
+              canvas
+                .toDataURL('image/png')
+                .replace('image/png', 'image/octet-stream')
+            );
+            link.click();
+          }}
+          isDisabled={!submittedText}
+        >
+          Download
+        </Button>
         <Menu>
           <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
             Colour Palette: {colorSchemeKey}
@@ -302,12 +323,28 @@ export function WordCloud() {
         </Menu>
       </ButtonGroup>
       <br></br> <br></br>
-      <WordCloudBox
-        text={submittedText}
-        filteredWords={submittedFilter}
-        maxWords={maxWords}
-        colorScheme={colorScheme}
-      />
+      <div
+        className="printable"
+        style={{
+          width,
+          height,
+          position: 'relative',
+          border: '1px lightgrey solid',
+          borderRadius: 5,
+          background: 'whitesmoke',
+        }}
+      >
+        <div ref={wordCloudDiv} style={{ width, height }}>
+          <WordCloudBox
+            text={submittedText}
+            filteredWords={submittedFilter}
+            maxWords={maxWords}
+            colorScheme={colorScheme}
+            width={width}
+            height={height}
+          />
+        </div>
+      </div>
       <Modal isOpen={modal != null} onClose={() => setModal(null)}>
         <ModalOverlay />
         {modal == null ? null : renderModal(modal)}

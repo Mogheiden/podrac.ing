@@ -17,6 +17,7 @@
     "detect-collisions": "^9.2.4",
     "dictionary-en": "^4.0.0",
     "framer-motion": "^11.0.8",
+    "html2canvas": "^1.4.1",
     "hunspell-spellchecker": "^1.0.2",
     "react": "^18.2.0",
     "react-card-flip": "^1.2.2",
