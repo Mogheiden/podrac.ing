@@ -216,4 +216,5 @@ export const commonWords = new Set([
   'yours',
   'yourself',
   'yourselves',
+  'thing',
 ]);
