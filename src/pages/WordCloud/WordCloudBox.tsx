@@ -3,90 +3,6 @@ import { System } from 'detect-collisions';
 import { commonWords } from './commonWords';
 import { makeSortedArray } from './sortWords';
 
-// export const WordCloudBox = memo(
-//   ({
-//     text,
-//     filteredWords,
-//     maxWords,
-//     colorScheme,
-//     width,
-//     height,
-//   }: {
-//     text: string;
-//     filteredWords: Set<string>;
-//     maxWords: number;
-//     colorScheme: readonly string[];
-//     width: number;
-//     height: number;
-//   }) => {
-//     const [wordMap, words, wordCount] = makeSortedArray(
-//       text,
-//       filteredWords,
-//       commonWords,
-//       maxWords
-//     );
-
-//     const system = new System();
-
-//     return words.map((word, i) => (
-//       <div
-//         style={{
-//           position: 'absolute',
-//           top: 0,
-//           left: 0,
-//           padding: 3,
-//           fontFamily: 'Public Sans',
-//           fontSize: getFontSize(i, wordMap.get(word)!, wordCount),
-//           lineHeight: '100%',
-//           color: colorScheme[i % colorScheme.length],
-//         }}
-//         ref={(el) => {
-//           if (!el) return;
-//           const { width: wordWidth, height: wordHeight } =
-//             el.getBoundingClientRect();
-//           const initialBoxPos = { x: width / 2, y: height / 2 };
-//           if (i === 0) {
-//             initialBoxPos.x -= wordWidth / 2;
-//             initialBoxPos.y -= wordHeight / 2;
-//           }
-//           const box = system.createBox(initialBoxPos, wordWidth, wordHeight);
-//           let numOutOfBounds = 0;
-//           while (numOutOfBounds < 200) {
-//             let dx = 0.5 - Math.random();
-//             let dy = 0.5 - Math.random();
-//             const l = Math.sqrt(dx * dx + dy * dy);
-//             dx /= l;
-//             dy /= l;
-//             while (system.checkOne(box)) {
-//               box.setPosition(box.pos.x + 10 * dx, box.pos.y + 10 * dy);
-//             }
-//             if (
-//               box.pos.x + wordWidth > width ||
-//               box.pos.x < 0 ||
-//               box.pos.y + wordHeight > height ||
-//               box.pos.y < 0
-//             ) {
-//               box.setPosition(initialBoxPos.x, initialBoxPos.y);
-//               numOutOfBounds += 1;
-//               continue;
-//             }
-//             break;
-//           }
-//           if (numOutOfBounds >= 20) {
-//             system.remove(box);
-//             return;
-//           }
-//           box.isStatic = true;
-//           el.style.left = `${box.pos.x}px`;
-//           el.style.top = `${box.pos.y}px`;
-//         }}
-//       >
-//         {word}
-//       </div>
-//     ));
-//   }
-// );
-
 export const WordCloudBox = memo(
   ({
     text,
@@ -103,6 +19,8 @@ export const WordCloudBox = memo(
     width: number;
     height: number;
   }) => {
+    const font = 'Public Sans';
+    const renderScale = 2;
     const [wordMap, words, wordCount] = makeSortedArray(
       text,
       filteredWords,
@@ -113,15 +31,20 @@ export const WordCloudBox = memo(
     const system = new System();
     return (
       <canvas
+        id="word-cloud-canvas"
+        style={{ width: '100%', height: '100%' }}
         ref={(el) => {
           if (!el) return;
           const ctx = el.getContext('2d');
           if (!ctx) throw new Error('Missing canvas context');
-          ctx.clearRect(0, 0, width, height);
+
+          ctx.clearRect(0, 0, width * renderScale, height * renderScale);
+          ctx.fillStyle = 'whitesmoke';
+          ctx.fillRect(0, 0, width * renderScale, height * renderScale);
+
           words.forEach((word, i) => {
             const fontSize = getFontSize(i, wordMap.get(word)!, wordCount);
-            ctx.font = `${fontSize}px Public Sans`;
-            ctx.fillStyle = colorScheme[i % colorScheme.length];
+            ctx.font = `${fontSize}px ${font}`;
 
             const measurement = ctx.measureText(word);
             const wordWidth = measurement.width + 6;
@@ -163,15 +86,19 @@ export const WordCloudBox = memo(
               return;
             }
             box.isStatic = true;
+
+            ctx.font = `${fontSize * renderScale}px ${font}`;
+            ctx.fillStyle = colorScheme[i % colorScheme.length];
+
             ctx.fillText(
               word,
-              box.pos.x,
-              box.pos.y + measurement.actualBoundingBoxAscent
+              box.pos.x * renderScale,
+              (box.pos.y + measurement.actualBoundingBoxAscent) * renderScale
             );
           });
         }}
-        width={width}
-        height={height}
+        width={width * renderScale}
+        height={height * renderScale}
       />
     );
   }

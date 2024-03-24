@@ -34,7 +34,6 @@ import { WordCloudBox } from './WordCloudBox';
 import { ColorScheme, allColourCodes, colorSchemes } from './colorSchemes';
 import { commonWords } from './commonWords';
 import { makeSortedArray } from './sortWords';
-import html2canvas from 'html2canvas';
 
 const defaultNumberWords = 100;
 
@@ -265,13 +264,16 @@ export function WordCloud() {
           Stats
         </Button>
         <Button
-          onClick={async () => {
-            const canvas = await html2canvas(wordCloudDiv.current!);
+          onClick={() => {
             const link = document.createElement('a');
             link.setAttribute('download', 'wordcloud.png');
             link.setAttribute(
               'href',
-              canvas
+              (
+                document.getElementById(
+                  'word-cloud-canvas'
+                ) as HTMLCanvasElement
+              )
                 .toDataURL('image/png')
                 .replace('image/png', 'image/octet-stream')
             );
@@ -332,7 +334,7 @@ export function WordCloud() {
           position: 'relative',
           border: '1px lightgrey solid',
           borderRadius: 5,
-          background: 'whitesmoke',
+          overflow: 'hidden',
         }}
       >
         <div ref={wordCloudDiv} style={{ width, height }}>
