@@ -7,6 +7,7 @@ import { SnekGame } from './pages/snek/snek_pej';
 import { CaesarPage } from './pages/Caesar cypher/caesar_page';
 import { Nldle } from './pages/NLDLE/NL_page';
 import { WordCloud } from './pages/WordCloud/WordCloud';
+import { PseudokuPage } from './pages/pseudoku/pseudoku_page';
 
 const router = createBrowserRouter([
   {
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
   {
     path: '/wordcloud',
     element: <WordCloud />,
+  },
+  {
+    path: '/pseudoku',
+    element: <PseudokuPage />,
   },
 ]);
 
