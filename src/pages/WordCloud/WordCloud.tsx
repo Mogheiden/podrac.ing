@@ -49,6 +49,7 @@ export function WordCloud() {
   const [colorSchemeKey, setColorScheme] = useState<ColorScheme | 'Custom'>(
     'Kingfisher'
   );
+  const [title, setTitle] = useState('');
   const [customColorScheme, setCustomColorScheme] = useState<string[]>([]);
   const [customColorSchemeInput, setCustomColorSchemeInput] = useState<
     string[]
@@ -198,21 +199,43 @@ export function WordCloud() {
     >
       <Heading size="3xl">Word Cloud Generator</Heading>
       <br></br>
-      <FormControl style={{ width: 700 }}>
-        <FormLabel>Enter text here:</FormLabel>
-        <textarea
-          name="postContent"
-          placeholder="Please insert words here."
-          rows={10}
-          onChange={(e) => (textField.current = e.target.value)}
-          style={{
-            border: '1px lightgrey solid',
-            borderRadius: 5,
-            padding: 8,
-            width: '100%',
-          }}
-        />
-      </FormControl>
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'left' }}>
+          <FormControl style={{ width: 'auto', alignSelf: 'flex-start' }}>
+            <FormLabel>Set title: (Optional)</FormLabel>
+            <textarea
+              value={title}
+              name="wordCloudTitle"
+              placeholder="Please put title here."
+              rows={1}
+              cols={50}
+              onChange={(e) => setFilterText(e.target.value)}
+              style={{
+                border: '1px lightgrey solid',
+                borderRadius: 5,
+                padding: 8,
+                marginRight: 20,
+              }}
+            />
+          </FormControl>
+        </div>
+        <br></br>
+        <FormControl style={{ width: 700 }}>
+          <FormLabel>Enter text here:</FormLabel>
+          <textarea
+            name="postContent"
+            placeholder="Please insert words here."
+            rows={10}
+            onChange={(e) => (textField.current = e.target.value)}
+            style={{
+              border: '1px lightgrey solid',
+              borderRadius: 5,
+              padding: 8,
+              width: '100%',
+            }}
+          />
+        </FormControl>
+      </div>
       <br></br>
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <FormControl style={{ width: 'auto' }}>
