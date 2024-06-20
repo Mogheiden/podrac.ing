@@ -49,7 +49,7 @@ export function WordCloud() {
   const [colorSchemeKey, setColorScheme] = useState<ColorScheme | 'Custom'>(
     'Kingfisher'
   );
-  const [title, setTitle] = useState('');
+  const [title] = useState('');
   const [customColorScheme, setCustomColorScheme] = useState<string[]>([]);
   const [customColorSchemeInput, setCustomColorSchemeInput] = useState<
     string[]
