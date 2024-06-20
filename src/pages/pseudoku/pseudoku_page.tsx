@@ -8,19 +8,17 @@ import {
 
 const squareSize = 50;
 
-function Square(props: {
-  y: number;
-  x: number;
-  input?: number;
-  possibilities?: number[];
-}) {
-  return props.input;
-}
+// function Square(props: {
+//   y: number;
+//   x: number;
+//   input?: number;
+//   possibilities?: number[];
+// }) {
+//   return props.input;
+// }
 
 export function PseudokuPage() {
-  const [{ board, solution }, setNewPuzzle] = useState(() =>
-    newBoard('medium')
-  );
+  const [{ board }] = useState(() => newBoard('medium'));
   const [selectedSquare, setSelectedSquare] = useState<[number, number] | null>(
     null
   );
