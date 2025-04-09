@@ -49,7 +49,7 @@ export function WordCloud() {
   const [colorSchemeKey, setColorScheme] = useState<ColorScheme | 'Custom'>(
     'Kingfisher'
   );
-  const [title] = useState('');
+  const [title, setTitle] = useState('');
   const [customColorScheme, setCustomColorScheme] = useState<string[]>([]);
   const [customColorSchemeInput, setCustomColorSchemeInput] = useState<
     string[]
@@ -209,7 +209,7 @@ export function WordCloud() {
               placeholder="Please put title here."
               rows={1}
               cols={50}
-              onChange={(e) => setFilterText(e.target.value)}
+              onChange={(e) => setTitle(e.target.value)}
               style={{
                 border: '1px lightgrey solid',
                 borderRadius: 5,
